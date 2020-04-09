@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import logout
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
 from django.db.models import Sum, Count
 from django.shortcuts import render, redirect
@@ -7,7 +8,6 @@ from django.views import View
 from django.views.generic import ListView, CreateView
 
 from .admin import UserCreationForm
-from .forms import AuthenticationForm
 from .models import *
 
 
@@ -33,6 +33,18 @@ class LoginUserView(LoginView):
         form.fields['username'].widget = forms.EmailInput(attrs={'placeholder': 'Email'})
         form.fields['password'].widget = forms.PasswordInput(attrs={'placeholder': 'Hasło'})
         return form
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            email = form.cleaned_data['username']
+            try:
+                MyUser.objects.get(email=email)
+            except MyUser.DoesNotExist:
+                return redirect('/register')
+            return self.form_invalid(form)
 
 class LogoutView(View):
     def get(self, request):

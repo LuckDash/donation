@@ -4,9 +4,9 @@ from django.contrib.auth.models import (
 )
 
 TYPES = (
-    (1, "fundacja"),
-    (2, "organizacja pozarządowa"),
-    (3, "zbiórka lokalna"),
+    (1, "Fundacja"),
+    (2, "Organizacja pozarządowa"),
+    (3, "Zbiórka lokalna"),
 )
 
 class MyUserManager(BaseUserManager):

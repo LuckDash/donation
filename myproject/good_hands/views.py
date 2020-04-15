@@ -1,15 +1,17 @@
+import json
+
 from django import forms
-from django.contrib.auth import logout
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.db.models import Sum, Count
-from django.shortcuts import render, redirect
-from django.views import View
+from django.http import HttpResponse
+from django.urls import reverse
+from django.urls import reverse_lazy as _
 from django.views.generic import ListView, CreateView
 
 from .admin import UserCreationForm
-from .models import *
-
+from .models import Institution, Donation, MyUser, Category
 
 
 class LandingPageView(ListView):
@@ -43,22 +45,51 @@ class LoginUserView(LoginView):
             try:
                 MyUser.objects.get(email=email)
             except MyUser.DoesNotExist:
-                return redirect('/register')
+                return reverse('register')
             return self.form_invalid(form)
 
-class LogoutView(View):
-    def get(self, request):
-        logout(request)
-        return redirect('/')
+class AddDonationView(LoginRequiredMixin, ListView):
+    model = Category
+    template_name = 'good_hands/form.html'
+    context_object_name = 'categories_obj'
+    extra_context = {'institutions': Institution.objects.all(),
+                     }
 
-class AddDonationView(View):
-    def get(self, request):
-        return render(request, 'good_hands/form.html')
+    def post(self, request):
+        if request.method == 'POST':
+            data = {}
+            bags = request.POST['bags']
+            categories = request.POST.getlist('categories')
+            organization = request.POST['organization']
+            address = request.POST['address']
+            city = request.POST['city']
+            postcode = request.POST['postcode']
+            phone = request.POST['phone']
+            data = request.POST['data']
+            time = request.POST['time']
+            more_info = request.POST['more_info']
+
+            donation = Donation(quantity=bags,
+                                address=address,
+                                institution_id=organization,
+                                phone_number=phone,
+                                city=city,
+                                zip_code=postcode,
+                                pick_up_date=data,
+                                pick_up_time=time,
+                                pick_up_comment=more_info,
+                                user_id=request.user.id)
+            donation.save()
+
+            return HttpResponse(
+                json.dumps(data),
+                content_type="application/json"
+            )
 
 class RegisterView(CreateView):
     form_class = UserCreationForm
     template_name = 'good_hands/register.html'
-    success_url = '/login'
+    success_url = _('login')
 
     def get_form(self, form_class=None):
         if form_class is None:

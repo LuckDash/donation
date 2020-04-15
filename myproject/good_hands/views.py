@@ -81,6 +81,9 @@ class AddDonationView(LoginRequiredMixin, ListView):
                                 user_id=request.user.id)
             donation.save()
 
+            for x in categories:
+                donation.categories.add(x)
+
             return HttpResponse(
                 json.dumps(data),
                 content_type="application/json"

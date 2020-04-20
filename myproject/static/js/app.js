@@ -409,7 +409,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // handle a successful response
                 success: function (json) {
-                    $('#bags').val(''); // remove the value from the input
                     console.log(json); // log the returned json to the console
                     console.log("success"); // another sanity check
                     window.location='/success/'
@@ -434,13 +433,4 @@ document.addEventListener("DOMContentLoaded", function () {
     if (form !== null) {
         new FormSteps(form);
     }
-});
-
-$(document).ready(function() {
-  $(window).keydown(function(event){
-    if(event.keyCode == 13) {
-      event.preventDefault();
-      return false;
-    }
-  });
 });
